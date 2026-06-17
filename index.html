@@ -67,32 +67,6 @@
   <script type="text/babel">
       const { useState, useEffect, useMemo, useCallback, useRef } = React;
 
-      // --- [安全対策エリア] ブラウザの権限ブロックによるクラッシュを防ぐ仮想ストレージ ---
-      window.shadowStorage = window.shadowStorage || {};
-      const safeStorage = {
-          getItem: (key) => {
-              try {
-                  return localStorage.getItem(key);
-              } catch (e) {
-                  return window.shadowStorage[key] || null;
-              }
-          },
-          setItem: (key, value) => {
-              try {
-                  localStorage.setItem(key, value);
-              } catch (e) {
-                  window.shadowStorage[key] = value;
-              }
-          },
-          removeItem: (key) => {
-              try {
-                  localStorage.removeItem(key);
-              } catch (e) {
-                  delete window.shadowStorage[key];
-              }
-          }
-      };
-
       // ╔══════════════════════════════════════════════════════╗
       // ║  ★ デフォルト設定  (HTML直書きで簡単に変更可)    ║
       // ╚══════════════════════════════════════════════════════╝
@@ -141,8 +115,8 @@
       const CUSTOM_DATA_KEY = `custom_data_${appTitle}`;
       const PRESETS_KEY = `presets_${appTitle}`;
 
-      // ★ リーダーボード設定
-      const LEADERBOARD_URL = '';
+      // ★ リーダーボード設定 (GASデプロイ後にURLを書き換える)
+      const LEADERBOARD_URL = ''; // 'https://script.google.com/macros/s/XXXXX/exec'
       const LEADERBOARD_USER_KEY = 'anqi_userId';
       const LEADERBOARD_STATS_KEY = 'anqi_stats';
       const LEADERBOARD_SESSION_START = 'anqi_sessionStart';
@@ -230,6 +204,63 @@
                   canvasPosition: 'overlay',
                   displayScale: 1.2
               }
+          },
+          {
+              id: 'preset_english_write',
+              name: '英単語手書き',
+              settings: {
+                  darkMode: false,
+                  autoSpeak: false,
+                  rateIndex: 2,
+                  fontSizeQIndex: 2,
+                  fontSizeAIndex: 2,
+                  reverseMode: false,
+                  showCanvas: true,
+                  showSpeakButton: true,
+                  enableDictation: false,
+                  enableKeyboardSpeak: true,
+                  enableInput: false,
+                  canvasPosition: 'overlay',
+                  displayScale: 1.2
+              }
+          },
+          {
+              id: 'preset_english_type',
+              name: '英単語手打ち',
+              settings: {
+                  darkMode: false,
+                  autoSpeak: false,
+                  rateIndex: 2,
+                  fontSizeQIndex: 2,
+                  fontSizeAIndex: 2,
+                  reverseMode: false,
+                  showCanvas: false,
+                  showSpeakButton: true,
+                  enableDictation: false,
+                  enableKeyboardSpeak: true,
+                  enableInput: true,
+                  canvasPosition: 'overlay',
+                  displayScale: 1.2
+              }
+          },
+          {
+              id: 'preset_english_listen',
+              name: '英単語/英文聞き取り',
+              settings: {
+                  darkMode: false,
+                  autoSpeak: false,
+                  rateIndex: 2,
+                  fontSizeQIndex: 2,
+                  fontSizeAIndex: 2,
+                  reverseMode: false,
+                  showCanvas: false,
+                  showSpeakButton: true,
+                  enableDictation: true,
+                  enableKeyboardSpeak: true,
+                  enableInput: false,
+                  canvasPosition: 'overlay',
+                  displayScale: 1.2
+              }
           }
       ];
 
@@ -252,7 +283,7 @@
 "ヘイコウ"感覚を養う。 平衡
 月刊誌を"コウドク"する。 購読
 食料品を"コウニュウ"する。 購入
-"コウバイブ"で消しゴムを買う。 購買部
+"コウバイブ"で消しゴムを買う. 購買部
 専門家に教えを"コ"う。 乞
 "イノチゴ"いをする。 命乞
 質実"ゴウケン"の気風。 剛健
@@ -307,39 +338,40 @@
 金一封を"タマワ"る。 賜
 釣り針に"エサ"をつける。 餌
 鳥の"エヅ"けをする。 餌付
-友人の才能に"シット"する。 嫉妬
-"シッキ"を外国に輸出する。 漆器
-"シッコク"の闇につつまれる。 漆黒
+友人の才能に"シット"する。 嫉盗 
+"シッキ"を外国に輸出する。 漆器 
+"シッコク"の闇につつまれる. 漆黒 
 "ウルシヌ"りの箸。 漆塗
-"シャダン"機が下りる。 遮断
+"シャダン"機が下りる。 遮断 
 カーテンで光を"サエギ"る。 遮
-水道の"ジャグチ"をひねる。 蛇口
-川が"ダコウ"している。 蛇行
-"ヘビ"の生態を調べる。 蛇
-情状を"シャクリョウ"する。 酌量
-結婚式の"バイシャク"人。 媒酌
-"シュギョク"の短編小説を読む。 珠玉
-"シンジュ"の首飾りをかける。 真珠
-良性の"シュウヨウ"だった。 腫瘍
-捻挫して足が"ハ"れる。 腫
+水道の"ジャグチ"をひねる。 蛇口 
+川が"ダコウ"している。 蛇行 
+"ヘビ"の生態を調べる。 蛇 
+情状を"シャクリョウ"する。 酌量 
+結婚式の"バイシャク"人。 媒酌 
+"シュギョク"の短編小説を読む。 珠玉 
+"シンジュ"の首飾りをかける。 真珠 
+良性の"シュウヨウ"だった。 腫瘍 
+捻挫して足が"ハ"れる。 腫 
 泣いて目を"ハ"らす。 腫
-憎しみの"ジュバク"が解ける。 呪縛
-"ジュモン"を唱える。 呪文
-我が身の不運を"ノロ"。 呪
-"ジュガク"を学ぶ。 儒学
-"ジュキョウ"は孔子が創始した。 儒教
-"シュウジン"を護送する。 囚人
-"ダツゴクシュウ"を逮捕する。 脱獄囚
-"アクシュウ"がただよう。 悪臭
+憎しみの"ジュバク"が解ける。 呪縛 
+"ジュモン"を唱える。 呪文 
+我が身の不運を"ノロ"。 呪 
+"ジュガク"を学ぶ。 儒学 
+"ジュキョウ"は孔子が創始した。 儒教 
+"シュウジン"を護送する。囚人 
+"ダツゴクシュウ"を逮捕する。 脱獄囚 
+"アクシュウ"がただよう。 悪臭 
 "クサ"いものには蓋をする。 臭
-下水がひどく"ニオ"う。 臭
-新しい着物に"ソデ"を通す。 袖
-"ハンソデ"の季節になる。 半袖
-"シュウチシン"にかられる。 羞恥心
-"アイシュウ"が深まる。 哀愁
+下水がひどく"ニオ"う。 臭 
+新しい着物に"ソデ"を通す。 袖 
+"ハンソデ"の季節になる。 半袖 
+"シュウチシン"にかられる。 羞恥心 
+"アイシュウ"が深まる。 哀愁 
 "キョウシュウ"を感じる。 郷愁
 `.trim();
 
+      // CSV, TSV, スペース等に対応するパーサー (問題文 q をユニークキーとする)
       function parseProblemData(text) {
           return text.split('\n')
               .map(line => line.trim())
@@ -371,8 +403,9 @@
       }
 
       function App() {
+          // 1. ローカルストレージ（自分でカスタムしたデータ）を優先し、なければコード内のDEFAULTを使用
           const [rawText, setRawText] = useState(() => {
-              return safeStorage.getItem(CUSTOM_DATA_KEY) || DEFAULT_EXCEL_DATA;
+              return localStorage.getItem(CUSTOM_DATA_KEY) || DEFAULT_EXCEL_DATA;
           });
 
           const initialData = useMemo(() => {
@@ -386,6 +419,7 @@
           const [isFinished, setIsFinished] = useState(false);
           const [appTitleName, setAppTitleName] = useState(document.title);
 
+          // --- 設定 state（読み上げ・聞き取り・プリセット対応） ---
           const [settings, setSettings] = useState({ 
               darkMode: DEFAULT_DARK_MODE, 
               autoSpeak: DEFAULT_AUTO_SPEAK, 
@@ -403,14 +437,19 @@
               leaderboardName: DEFAULT_LEADERBOARD_NAME
           });
 
+          // プリセット管理
           const [presets, setPresets] = useState([]);
           const [presetName, setPresetName] = useState('');
           const [showPresetSave, setShowPresetSave] = useState(false);
+
+          // 聞き取り（音声認識）
           const [isListening, setIsListening] = useState(false);
           const [dictationResult, setDictationResult] = useState('');
           const recognitionRef = useRef(null);
+
+          // テキスト入力モード（キーボードで答えを入力）
           const [inputValue, setInputValue] = useState('');
-          const [inputResult, setInputResult] = useState(null);
+          const [inputResult, setInputResult] = useState(null); // null | 'correct' | 'incorrect'
           const inputRef = useRef(null);
 
           const [modals, setModals] = useState({ menu: false, list: false, edit: false });
@@ -422,6 +461,7 @@
           const [leaderboardData, setLeaderboardData] = useState(null);
           const [leaderboardLoading, setLeaderboardLoading] = useState(false);
 
+          // キャンバス操作
           const canvasRef = useRef(null);
           const canvasRightRef = useRef(null);
           const isDrawing = useRef(false);
@@ -429,8 +469,10 @@
           const lastY = useRef(0);
           const lastTime = useRef(0);
           const currentStrokeWidth = useRef(4.0);
+          // どのキャンバスに描画中か
           const activeCanvasRef = useRef(null);
 
+          // 最新の問題データを items から抽出
           const currentItemDetail = useMemo(() => {
               if (!currentItem) return null;
               return items.find(i => i.q === currentItem.q) || currentItem;
@@ -443,18 +485,20 @@
               return items;
           }, [items, activeMode]);
 
+          // プリセット読み込み
           useEffect(() => {
-              const saved = safeStorage.getItem(PRESETS_KEY);
+              const saved = localStorage.getItem(PRESETS_KEY);
               if (saved) {
                   try { setPresets(JSON.parse(saved)); } catch(e) {}
               } else {
                   setPresets(DEFAULT_PRESETS);
-                  safeStorage.setItem(PRESETS_KEY, JSON.stringify(DEFAULT_PRESETS));
+                  localStorage.setItem(PRESETS_KEY, JSON.stringify(DEFAULT_PRESETS));
               }
           }, []);
 
+          // 初回ロード
           useEffect(() => {
-              const savedData = safeStorage.getItem(STORAGE_KEY_V2);
+              const savedData = localStorage.getItem(STORAGE_KEY_V2);
               let loadedItems = [...initialData];
               if (savedData) {
                   try {
@@ -467,7 +511,7 @@
               }
               setItems(loadedItems);
 
-              const s = safeStorage.getItem(SETTINGS_KEY);
+              const s = localStorage.getItem(SETTINGS_KEY);
               if (s) {
                   try {
                       const p = JSON.parse(s);
@@ -483,6 +527,7 @@
               }
           }, [items]);
 
+          // SpeechRecognition 初期化
           useEffect(() => {
               if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
                   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -497,15 +542,23 @@
                           .join('');
                       setDictationResult(transcript);
                   };
+                  
                   recognition.onerror = (event) => {
-                      if (event.error !== 'aborted') showToast('音声認識エラー: ' + event.error);
+                      if (event.error !== 'aborted') {
+                          showToast('音声認識エラー: ' + event.error);
+                      }
                       setIsListening(false);
                   };
-                  recognition.onend = () => { setIsListening(false); };
+                  
+                  recognition.onend = () => {
+                      setIsListening(false);
+                  };
+                  
                   recognitionRef.current = recognition;
               }
           }, []);
 
+          // 進捗セーブ
           const saveItems = (newItems) => {
               setItems(newItems);
               const dataToSave = {};
@@ -514,7 +567,7 @@
                       dataToSave[i.q] = { w: i.w, ok: i.ok, star: i.star }; 
                   }
               });
-              safeStorage.setItem(STORAGE_KEY_V2, JSON.stringify(dataToSave));
+              localStorage.setItem(STORAGE_KEY_V2, JSON.stringify(dataToSave));
           };
 
           const nextQuestion = (currentItems, mode) => {
@@ -569,6 +622,7 @@
           const handleReveal = useCallback(() => {
               if (!currentItemDetail || isRevealed) return;
               setIsRevealed(true);
+              
               const textToSpeak = settings.reverseMode ? currentItemDetail.q : currentItemDetail.a;
               if (settings.autoSpeak) speak(textToSpeak, settings.rateIndex);
           }, [currentItemDetail, isRevealed, settings]);
@@ -578,7 +632,8 @@
               setIsRevealed(true);
               const correctAnswer = (settings.reverseMode ? currentItemDetail.q : currentItemDetail.a).trim();
               const userAnswer = inputValue.trim();
-              const isCorrect = userAnswer === correctAnswer || userAnswer.replace(/\s+/g, '') === correctAnswer.replace(/\s+/g, '');
+              const isCorrect = userAnswer === correctAnswer || 
+                  userAnswer.replace(/\s+/g, '') === correctAnswer.replace(/\s+/g, '');
               setInputResult(isCorrect ? 'correct' : 'incorrect');
               const textToSpeak = settings.reverseMode ? currentItemDetail.q : currentItemDetail.a;
               if (settings.autoSpeak) speak(textToSpeak, settings.rateIndex);
@@ -589,9 +644,20 @@
               const newItems = items.map(item => {
                   if (item.q === currentItemDetail.q) {
                       if (activeMode === 'star') {
-                          return { ...item, w: isOk ? 1 : item.w + 200, ok: isOk ? true : item.ok, star: isOk ? false : item.star, sessionDone: isOk };
+                          return { 
+                              ...item, 
+                              w: isOk ? 1 : item.w + 200, 
+                              ok: isOk ? true : item.ok, 
+                              star: isOk ? false : item.star, 
+                              sessionDone: isOk 
+                          };
                       } else {
-                          return { ...item, w: isOk ? 1 : item.w + 200, ok: isOk, sessionDone: isOk };
+                          return { 
+                              ...item, 
+                              w: isOk ? 1 : item.w + 200, 
+                              ok: isOk,
+                              sessionDone: isOk
+                          };
                       }
                   }
                   return item;
@@ -605,16 +671,25 @@
               const newItems = items.map(item => item.id === id ? { ...item, star: !item.star } : item);
               saveItems(newItems);
               const target = newItems.find(i => i.id === id);
-              if (target) showToast(target.star ? "★ 要復習に追加" : "★ 要復習から外しました");
+              if (target) {
+                 showToast(target.star ? "★ 要復習に追加" : "★ 要復習から外しました");
+              }
           };
 
           const speak = (text, rateIdx = settings.rateIndex) => {
               if (!text || !('speechSynthesis' in window)) return;
               window.speechSynthesis.cancel();
               const u = new SpeechSynthesisUtterance(text);
+              
               const englishPattern = /^[A-Za-z0-9\s,.:?!'"()\-]+$/;
-              u.lang = englishPattern.test(text.replace(/[\s\d]/g, '')) ? 'en-US' : 'ja-JP';
-              u.rate = speechRates[rateIdx]?.value || 1.0;
+              if (englishPattern.test(text.replace(/[\s\d]/g, ''))) {
+                  u.lang = 'en-US';
+              } else {
+                  u.lang = 'ja-JP';
+              }
+              
+              const targetRate = speechRates[rateIdx]?.value || 1.0;
+              u.rate = targetRate;
               window.speechSynthesis.speak(u);
           };
 
@@ -631,14 +706,16 @@
                   try {
                       recognitionRef.current.start();
                       setIsListening(true);
-                  } catch(e) { showToast('音声認識を開始できません'); }
+                  } catch(e) {
+                      showToast('音声認識を開始できません');
+                  }
               }
           };
 
           const updateSetting = (key, value) => {
               const newSettings = { ...settings, [key]: value };
               setSettings(newSettings);
-              safeStorage.setItem(SETTINGS_KEY, JSON.stringify(newSettings));
+              localStorage.setItem(SETTINGS_KEY, JSON.stringify(newSettings));
               if (key === 'darkMode') {
                   if (value) document.documentElement.classList.add('dark');
                   else document.documentElement.classList.remove('dark');
@@ -648,7 +725,7 @@
           const applyPreset = (preset) => {
               const newSettings = { ...settings, ...preset.settings };
               setSettings(newSettings);
-              safeStorage.setItem(SETTINGS_KEY, JSON.stringify(newSettings));
+              localStorage.setItem(SETTINGS_KEY, JSON.stringify(newSettings));
               if (newSettings.darkMode) document.documentElement.classList.add('dark');
               else document.documentElement.classList.remove('dark');
               showToast(`プリセット「${preset.name}」を適用しました`);
@@ -656,10 +733,14 @@
 
           const savePreset = () => {
               if (!presetName.trim()) return;
-              const newPreset = { id: `preset_${Date.now()}`, name: presetName.trim(), settings: { ...settings } };
+              const newPreset = {
+                  id: `preset_${Date.now()}`,
+                  name: presetName.trim(),
+                  settings: { ...settings }
+              };
               const updated = [...presets, newPreset];
               setPresets(updated);
-              safeStorage.setItem(PRESETS_KEY, JSON.stringify(updated));
+              localStorage.setItem(PRESETS_KEY, JSON.stringify(updated));
               setPresetName('');
               setShowPresetSave(false);
               showToast(`プリセット「${newPreset.name}」を保存しました`);
@@ -669,7 +750,7 @@
               e.stopPropagation();
               const updated = presets.filter(p => p.id !== id);
               setPresets(updated);
-              safeStorage.setItem(PRESETS_KEY, JSON.stringify(updated));
+              localStorage.setItem(PRESETS_KEY, JSON.stringify(updated));
               showToast('プリセットを削除しました');
           };
 
@@ -681,6 +762,7 @@
           const startFocusedLearning = () => {
               const newItems = items.map(i => ({ ...i, sessionDone: false }));
               setItems(newItems);
+              
               setActiveMode(listFilter);
               setModals({ ...modals, list: false });
               nextQuestion(newItems, listFilter);
@@ -688,9 +770,9 @@
           };
 
           const applyCustomData = () => {
-              safeStorage.setItem(CUSTOM_DATA_KEY, tempRawText);
+              localStorage.setItem(CUSTOM_DATA_KEY, tempRawText);
               setRawText(tempRawText);
-              safeStorage.removeItem(STORAGE_KEY_V2);
+              localStorage.removeItem(STORAGE_KEY_V2);
               setActiveMode('all');
               setModals(prev => ({ ...prev, edit: false }));
               showToast("新しい問題データを適用しました");
@@ -698,8 +780,8 @@
 
           const resetToDefaultData = () => {
               if (window.confirm("デフォルトの漢字テスト問題に戻します。よろしいですか？")) {
-                  safeStorage.removeItem(CUSTOM_DATA_KEY);
-                  safeStorage.removeItem(STORAGE_KEY_V2);
+                  localStorage.removeItem(CUSTOM_DATA_KEY);
+                  localStorage.removeItem(STORAGE_KEY_V2);
                   setRawText(DEFAULT_EXCEL_DATA);
                   setTempRawText(DEFAULT_EXCEL_DATA);
                   setActiveMode('all');
@@ -709,8 +791,8 @@
           };
 
           const resetAllData = () => {
-              if (window.confirm("全学習履歴を削除して最初からやり直します。よろしいですか？")) {
-                  safeStorage.removeItem(STORAGE_KEY_V2);
+              if (window.confirm("全学習履歴(進捗・★マーク)を削除して最初からやり直します。\nよろしいですか？")) {
+                  localStorage.removeItem(STORAGE_KEY_V2);
                   const freshItems = parseProblemData(rawText);
                   setItems(freshItems);
                   setActiveMode('all');
@@ -724,14 +806,21 @@
               const blob = new Blob([content], { type: mimeType });
               const url = URL.createObjectURL(blob);
               const a = document.createElement('a');
-              a.href = url; a.download = filename;
-              document.body.appendChild(a); a.click();
-              document.body.removeChild(a); URL.revokeObjectURL(url);
+              a.href = url;
+              a.download = filename;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
           };
 
           const exportJSON = () => {
               const data = {
-                  version: 1, exportedAt: new Date().toISOString(), appTitle, settings, presets,
+                  version: 1,
+                  exportedAt: new Date().toISOString(),
+                  appTitle: appTitle,
+                  settings: settings,
+                  presets: presets,
                   progress: Object.fromEntries(items.filter(i => i.ok || i.star || i.w !== 100).map(i => [i.q, { w: i.w, ok: i.ok, star: i.star }])),
                   customData: rawText
               };
@@ -741,32 +830,56 @@
 
           const importJSON = () => {
               const input = document.createElement('input');
-              input.type = 'file'; input.accept = '.json';
+              input.type = 'file';
+              input.accept = '.json';
               input.onchange = (e) => {
-                  const file = e.target.files[0]; if (!file) return;
+                  const file = e.target.files[0];
+                  if (!file) return;
                   const reader = new FileReader();
                   reader.onload = (ev) => {
                       try {
                           const data = JSON.parse(ev.target.result);
-                          if (!window.confirm("バックアップを読み込みます。よろしいですか？")) return;
+                          if (!window.confirm(`バックアップを読み込みます。現在の設定・進捗・データは上書きされます。\nエクスポート日時: ${data.exportedAt || '不明'}\nよろしいですか？`)) return;
+                          
                           if (data.settings) {
                               setSettings(data.settings);
-                              safeStorage.setItem(SETTINGS_KEY, JSON.stringify(data.settings));
+                              localStorage.setItem(SETTINGS_KEY, JSON.stringify(data.settings));
                               if (data.settings.darkMode) document.documentElement.classList.add('dark');
                               else document.documentElement.classList.remove('dark');
                           }
-                          if (data.presets) { setPresets(data.presets); safeStorage.setItem(PRESETS_KEY, JSON.stringify(data.presets)); }
+                          if (data.presets) {
+                              setPresets(data.presets);
+                              localStorage.setItem(PRESETS_KEY, JSON.stringify(data.presets));
+                          }
                           if (data.customData !== undefined) {
-                              setRawText(data.customData); safeStorage.setItem(CUSTOM_DATA_KEY, data.customData); safeStorage.removeItem(STORAGE_KEY_V2);
+                              setRawText(data.customData);
+                              localStorage.setItem(CUSTOM_DATA_KEY, data.customData);
+                              localStorage.removeItem(STORAGE_KEY_V2);
                               const finalItems = parseProblemData(data.customData);
                               if (data.progress) {
-                                  const merged = finalItems.map(item => ({ ...item, ...(data.progress[item.q] || {}) }));
-                                  setItems(merged); saveItemsRaw(merged);
-                              } else { setItems(finalItems); saveItemsRaw(finalItems); }
+                                  const merged = finalItems.map(item => ({
+                                      ...item,
+                                      ...(data.progress[item.q] || {})
+                                  }));
+                                  setItems(merged);
+                                  saveItemsRaw(merged);
+                              } else {
+                                  setItems(finalItems);
+                                  saveItemsRaw(finalItems);
+                              }
                               setActiveMode('all');
+                          } else if (data.progress) {
+                              const newItems = items.map(item => ({
+                                  ...item,
+                                  ...(data.progress[item.q] || {})
+                              }));
+                              setItems(newItems);
+                              saveItemsRaw(newItems);
                           }
                           showToast('バックアップを読み込みました');
-                      } catch(err) { showToast('JSONの解析に失敗しました'); }
+                      } catch(err) {
+                          showToast('JSONの解析に失敗しました');
+                      }
                   };
                   reader.readAsText(file);
               };
@@ -775,265 +888,1212 @@
 
           const saveItemsRaw = (newItems) => {
               const dataToSave = {};
-              newItems.forEach(i => { if (i.ok || i.star || i.w !== 100) dataToSave[i.q] = { w: i.w, ok: i.ok, star: i.star }; });
-              safeStorage.setItem(STORAGE_KEY_V2, JSON.stringify(dataToSave));
+              newItems.forEach(i => { 
+                  if (i.ok || i.star || i.w !== 100) {
+                      dataToSave[i.q] = { w: i.w, ok: i.ok, star: i.star }; 
+                  }
+              });
+              localStorage.setItem(STORAGE_KEY_V2, JSON.stringify(dataToSave));
           };
 
+          // --- リーダーボード連携 ---
           const getUserName = () => settings.leaderboardName || '';
+          
           const getUserId = () => {
-              let id = safeStorage.getItem(LEADERBOARD_USER_KEY);
-              if (!id) { id = 'u_' + Date.now().toString(36); safeStorage.setItem(LEADERBOARD_USER_KEY, id); }
+              let id = localStorage.getItem(LEADERBOARD_USER_KEY);
+              if (!id) {
+                  id = 'u_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+                  localStorage.setItem(LEADERBOARD_USER_KEY, id);
+              }
               return id;
           };
+
           const getLeaderboardStats = () => {
-              try { return JSON.parse(safeStorage.getItem(LEADERBOARD_STATS_KEY)) || { todayDate: '', todayCount: 0, totalMastered: 0, streak: 0, lastDate: '' }; } catch(e) { return { todayDate: '', todayCount: 0, totalMastered: 0, streak: 0, lastDate: '' }; }
-          };
-          const saveLeaderboardStats = (stats) => { safeStorage.setItem(LEADERBOARD_STATS_KEY, JSON.stringify(stats)); };
-          const updateLeaderboardStats = (newlyMastered) => {
-              if (newlyMastered <= 0) return; const stats = getLeaderboardStats(); const today = new Date().toISOString().slice(0, 10);
-              if (stats.todayDate !== today) { stats.todayDate = today; stats.todayCount = newlyMastered; } else { stats.todayCount += newlyMastered; }
-              stats.totalMastered = (stats.totalMastered || 0) + newlyMastered; stats.lastDate = today; saveLeaderboardStats(stats);
-          };
-          const getStudySeconds = () => {
-              const start = safeStorage.getItem(LEADERBOARD_SESSION_START);
-              if (!start) { safeStorage.setItem(LEADERBOARD_SESSION_START, Date.now()); return 0; }
-              return Math.floor((Date.now() - parseInt(start)) / 1000);
-          };
-          const submitToLeaderboard = () => {
-              if (!LEADERBOARD_URL) return; const name = getUserName(); if (!name) return; const stats = getLeaderboardStats();
-              const payload = { userId: getUserId(), userName: name, appTitle, masteredToday: stats.todayCount || 0, totalMastered: stats.totalMastered || 0, streak: stats.streak || 0, studySeconds: getStudySeconds() };
-              try { fetch(LEADERBOARD_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); } catch(e) {}
-          };
-          const openLeaderboard = () => { if (LEADERBOARD_URL) { window.open(LEADERBOARD_URL, '_blank'); } else { showToast('リーダーボードURLが未設定です'); } };
-          const fetchLeaderboardInline = (type = 'total') => {
-              if (!LEADERBOARD_URL) return; setLeaderboardLoading(true); setLeaderboardType(type);
-              const params = new URLSearchParams({ mode: 'json', type: type, limit: 30 }); if (appTitle) params.set('app', appTitle);
-              fetch(`${LEADERBOARD_URL}?${params}`).then(r => r.json()).then(data => { setLeaderboardData(data); setLeaderboardLoading(false); }).catch(() => { setLeaderboardData({ error: '接続できませんでした' }); setLeaderboardLoading(false); });
+              try {
+                  return JSON.parse(localStorage.getItem(LEADERBOARD_STATS_KEY)) || { todayDate: '', todayCount: 0, totalMastered: 0, streak: 0, lastDate: '' };
+              } catch(e) { return { todayDate: '', todayCount: 0, totalMastered: 0, streak: 0, lastDate: '' }; }
           };
 
+          const saveLeaderboardStats = (stats) => {
+              localStorage.setItem(LEADERBOARD_STATS_KEY, JSON.stringify(stats));
+          };
+
+          const updateLeaderboardStats = (newlyMastered) => {
+              if (newlyMastered <= 0) return;
+              const stats = getLeaderboardStats();
+              const today = new Date().toISOString().slice(0, 10);
+              
+              if (stats.todayDate !== today) {
+                  const yesterday = new Date();
+                  yesterday.setDate(yesterday.getDate() - 1);
+                  const yesterdayStr = yesterday.toISOString().slice(0, 10);
+                  if (stats.lastDate === yesterdayStr || stats.lastDate === today) {
+                      stats.streak = (stats.streak || 0) + 1;
+                  } else if (stats.lastDate !== today) {
+                      stats.streak = 1;
+                  }
+                  stats.todayDate = today;
+                  stats.todayCount = newlyMastered;
+              } else {
+                  stats.todayCount += newlyMastered;
+              }
+              stats.totalMastered = (stats.totalMastered || 0) + newlyMastered;
+              stats.lastDate = today;
+              saveLeaderboardStats(stats);
+          };
+
+          const getStudySeconds = () => {
+              const start = localStorage.getItem(LEADERBOARD_SESSION_START);
+              if (!start) {
+                  localStorage.setItem(LEADERBOARD_SESSION_START, Date.now());
+                  return 0;
+              }
+              return Math.floor((Date.now() - parseInt(start)) / 1000);
+          };
+
+          const submitToLeaderboard = () => {
+              if (!LEADERBOARD_URL) return;
+              const name = getUserName();
+              if (!name) return;
+              const stats = getLeaderboardStats();
+              const payload = {
+                  userId: getUserId(),
+                  userName: name,
+                  appTitle: appTitle,
+                  masteredToday: stats.todayCount || 0,
+                  totalMastered: stats.totalMastered || 0,
+                  streak: stats.streak || 0,
+                  studySeconds: getStudySeconds()
+              };
+              try {
+                  fetch(LEADERBOARD_URL, {
+                      method: 'POST',
+                      mode: 'no-cors',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(payload)
+                  });
+              } catch(e) {}
+          };
+
+          const openLeaderboard = () => {
+              if (LEADERBOARD_URL) {
+                  window.open(LEADERBOARD_URL, '_blank');
+              } else {
+                  showToast('リーダーボードURLが未設定です');
+              }
+          };
+
+          const fetchLeaderboardInline = (type = 'total') => {
+              if (!LEADERBOARD_URL) return;
+              setLeaderboardLoading(true);
+              setLeaderboardType(type);
+              const params = new URLSearchParams({ mode: 'json', type: type, limit: 30 });
+              if (appTitle) params.set('app', appTitle);
+              fetch(`${LEADERBOARD_URL}?${params}`)
+                  .then(r => r.json())
+                  .then(data => {
+                      setLeaderboardData(data);
+                      setLeaderboardLoading(false);
+                  })
+                  .catch(() => {
+                      setLeaderboardData({ error: '接続できませんでした' });
+                      setLeaderboardLoading(false);
+                  });
+          };
+
+          // キャンバス描画
           const draw = (e) => {
-              const canvas = activeCanvasRef.current; if (!isDrawing.current || !canvas) return; e.preventDefault(); const ctx = canvas.getContext('2d');
+              const canvas = activeCanvasRef.current;
+              if (!isDrawing.current || !canvas) return;
+              e.preventDefault();
+              const ctx = canvas.getContext('2d');
+              
               let clientX, clientY, pressure = 0.5;
-              if (e.touches && e.touches.length > 0) { clientX = e.touches[0].clientX; clientY = e.touches[0].clientY; } else { clientX = e.clientX; clientY = e.clientY; }
-              const rect = canvas.getBoundingClientRect(); const scaleX = canvas.width / rect.width; const scaleY = canvas.height / rect.height;
-              const x = (clientX - rect.left) * scaleX; const y = (clientY - rect.top) * scaleY;
-              ctx.lineWidth = currentStrokeWidth.current; ctx.beginPath(); ctx.moveTo(lastX.current, lastY.current); ctx.lineTo(x, y); ctx.stroke();
-              lastX.current = x; lastY.current = y; lastTime.current = Date.now();
+              if (e.touches && e.touches.length > 0) {
+                  clientX = e.touches[0].clientX;
+                  clientY = e.touches[0].clientY;
+                  if (e.touches[0].force !== undefined) {
+                      pressure = Math.max(0.1, e.touches[0].force);
+                  }
+              } else {
+                  clientX = e.clientX;
+                  clientY = e.clientY;
+                  const native = e.nativeEvent || e;
+                  if (native.pressure !== undefined && native.pressure > 0) {
+                      pressure = native.pressure;
+                  }
+              }
+
+              const rect = canvas.getBoundingClientRect();
+              const scaleX = canvas.width / rect.width;
+              const scaleY = canvas.height / rect.height;
+              
+              const x = (clientX - rect.left) * scaleX;
+              const y = (clientY - rect.top) * scaleY;
+
+              const now = Date.now();
+              const dt = now - lastTime.current;
+              const dx = x - lastX.current;
+              const dy = y - lastY.current;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              
+              let speed = dist / (dt || 1);
+              if (speed > 5) speed = 5;
+
+              const native = e.nativeEvent || e;
+              let targetWidth = 4.5;
+              if (native.pointerType === 'pen' || (e.touches && e.touches.length > 0)) {
+                  targetWidth = 1.5 + (pressure * 8.5); 
+              } else {
+                  targetWidth = 6.8 - (speed * 1.0); 
+              }
+
+              currentStrokeWidth.current = currentStrokeWidth.current * 0.72 + targetWidth * 0.28;
+              if (currentStrokeWidth.current < 1.5) currentStrokeWidth.current = 1.5;
+              if (currentStrokeWidth.current > 10.0) currentStrokeWidth.current = 10.0;
+
+              ctx.lineWidth = currentStrokeWidth.current;
+              ctx.beginPath();
+              ctx.moveTo(lastX.current, lastY.current);
+              ctx.lineTo(x, y);
+              ctx.stroke();
+
+              lastX.current = x;
+              lastY.current = y;
+              lastTime.current = now;
           };
 
           const startDrawing = (e) => {
-              e.preventDefault(); const canvas = e.target.closest('canvas'); if (!canvas) return;
-              activeCanvasRef.current = canvas; isDrawing.current = true;
-              let clientX, clientY; if (e.touches && e.touches.length > 0) { clientX = e.touches[0].clientX; clientY = e.touches[0].clientY; } else { clientX = e.clientX; clientY = e.clientY; }
+              e.preventDefault();
+              const canvas = e.target.closest('canvas');
+              if (!canvas) return;
+              activeCanvasRef.current = canvas;
+              isDrawing.current = true;
+              
+              let clientX, clientY;
+              if (e.touches && e.touches.length > 0) {
+                  clientX = e.touches[0].clientX;
+                  clientY = e.touches[0].clientY;
+              } else {
+                  clientX = e.clientX;
+                  clientY = e.clientY;
+              }
+
               const rect = canvas.getBoundingClientRect();
-              lastX.current = (clientX - rect.left) * (canvas.width / rect.width);
-              lastY.current = (clientY - rect.top) * (canvas.height / rect.height);
-              lastTime.current = Date.now(); currentStrokeWidth.current = 4.0;
+              const scaleX = canvas.width / rect.width;
+              const scaleY = canvas.height / rect.height;
+
+              lastX.current = (clientX - rect.left) * scaleX;
+              lastY.current = (clientY - rect.top) * scaleY;
+              lastTime.current = Date.now();
+              currentStrokeWidth.current = 4.0;
           };
 
-          const stopDrawing = (e) => { if (e) e.preventDefault(); isDrawing.current = false; };
+          const stopDrawing = (e) => {
+              if (e) e.preventDefault();
+              isDrawing.current = false;
+          };
 
+          // キャンバス補正
           useEffect(() => {
               const setupCanvas = (canvas) => {
-                  if (!canvas) return; const rect = canvas.getBoundingClientRect(); if (rect.width === 0 || rect.height === 0) return;
-                  canvas.width = rect.width * 2; canvas.height = rect.height * 2; const ctx = canvas.getContext('2d');
-                  ctx.lineWidth = 4.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                  if (!canvas) return;
+                  const rect = canvas.getBoundingClientRect();
+                  if (rect.width === 0 || rect.height === 0) return;
+                  canvas.width = rect.width * 2;
+                  canvas.height = rect.height * 2;
+                  const ctx = canvas.getContext('2d');
+                  ctx.lineWidth = 4.5;
+                  ctx.lineCap = 'round';
+                  ctx.lineJoin = 'round';
                   ctx.strokeStyle = document.documentElement.classList.contains('dark') ? '#60a5fa' : '#2563eb';
               };
+
               if (settings.showCanvas && !isFinished && currentItemDetail) {
-                  const timer = setTimeout(() => { setupCanvas(canvasRef.current); if (settings.canvasPosition === 'right') setupCanvas(canvasRightRef.current); }, 100);
+                  const timer = setTimeout(() => {
+                      setupCanvas(canvasRef.current);
+                      if (settings.canvasPosition === 'right') {
+                          setupCanvas(canvasRightRef.current);
+                      }
+                  }, 100);
                   return () => clearTimeout(timer);
               }
           }, [settings.showCanvas, currentItemDetail, isFinished, settings.darkMode, settings.canvasPosition, settings.displayScale]);
 
+          // キーボードショートカット
           useEffect(() => {
               const handleKeyDown = (e) => {
                   if (modals.menu || modals.list || modals.edit || isFinished) return;
                   if (e.code === 'KeyS') { e.preventDefault(); if(currentItemDetail) toggleStar(currentItemDetail.id); return; }
+                  
                   if (!isRevealed) {
-                      if (settings.enableInput) { if (e.code === 'Enter') { e.preventDefault(); handleInputSubmit(); } }
-                      else if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); handleReveal(); }
+                      if (settings.enableInput) {
+                          if (e.code === 'Enter') {
+                              e.preventDefault();
+                              handleInputSubmit();
+                          }
+                      } else if (e.code === 'Space' || e.code === 'Enter' || e.code === 'ArrowUp' || e.code === 'ArrowDown') { 
+                          e.preventDefault(); 
+                          handleReveal(); 
+                      }
                   } else {
                       if (e.code === 'ArrowLeft') { e.preventDefault(); handleResult(false); }
                       else if (e.code === 'ArrowRight') { e.preventDefault(); handleResult(true); }
+                      else if ((e.code === 'Space' || e.code === 'Enter') && settings.enableKeyboardSpeak) { 
+                          e.preventDefault(); 
+                          const textToSpeak = settings.reverseMode ? currentItemDetail.q : currentItemDetail.a;
+                          speak(textToSpeak); 
+                      }
                   }
               };
               window.addEventListener('keydown', handleKeyDown);
               return () => window.removeEventListener('keydown', handleKeyDown);
           }, [modals, isFinished, isRevealed, currentItemDetail, handleReveal, handleResult, settings, handleInputSubmit]);
 
+          // 自動フォーカス
           useEffect(() => {
               if (settings.enableInput && !isRevealed && !isFinished && currentItemDetail && inputRef.current) {
-                  const timer = setTimeout(() => { inputRef.current?.focus(); }, 200); return () => clearTimeout(timer);
+                  const timer = setTimeout(() => { inputRef.current?.focus(); }, 200);
+                  return () => clearTimeout(timer);
               }
           }, [currentItemDetail, settings.enableInput, isRevealed, isFinished]);
 
+          // リーダーボード定期送信
           useEffect(() => {
-              if (!LEADERBOARD_URL || !getUserName()) return; submitToLeaderboard();
-              const timer = setInterval(submitToLeaderboard, 60000); return () => clearInterval(timer);
+              if (!LEADERBOARD_URL || !getUserName()) return;
+              submitToLeaderboard();
+              const timer = setInterval(submitToLeaderboard, 60000);
+              return () => clearInterval(timer);
           }, []);
 
-          useEffect(() => { safeStorage.setItem(LEADERBOARD_SESSION_START, Date.now()); }, []);
+          // セッション開始
+          useEffect(() => {
+              localStorage.setItem(LEADERBOARD_SESSION_START, Date.now());
+          }, []);
 
           const okCount = activeItems.filter(i => i.ok).length;
           const totalCount = activeItems.length;
           const progressPercent = totalCount === 0 ? 0 : Math.floor((okCount / totalCount) * 100);
-          const getModeLabel = () => { if (activeMode === 'star') return '★ 要復習'; if (activeMode === 'ng') return '未マスター'; if (activeMode === 'ok') return 'マスター済'; return ''; };
-          const displayQuestion = useMemo(() => { if (!currentItemDetail) return ''; return settings.reverseMode ? currentItemDetail.a : currentItemDetail.q; }, [currentItemDetail, settings.reverseMode]);
-          const displayAnswer = useMemo(() => { if (!currentItemDetail) return ''; return settings.reverseMode ? currentItemDetail.q : currentItemDetail.a; }, [currentItemDetail, settings.reverseMode]);
+
+          const getModeLabel = () => {
+              if (activeMode === 'star') return '★ 要復習';
+              if (activeMode === 'ng') return '未マスター';
+              if (activeMode === 'ok') return 'マスター済';
+              return '';
+          };
+
+          const displayQuestion = useMemo(() => {
+              if (!currentItemDetail) return '';
+              return settings.reverseMode ? currentItemDetail.a : currentItemDetail.q;
+          }, [currentItemDetail, settings.reverseMode]);
+
+          const displayAnswer = useMemo(() => {
+              if (!currentItemDetail) return '';
+              return settings.reverseMode ? currentItemDetail.q : currentItemDetail.a;
+          }, [currentItemDetail, settings.reverseMode]);
+
           const classSizeQ = fontSizesQ[settings.fontSizeQIndex]?.class || 'text-xl sm:text-2xl';
           const classSizeA = fontSizesA[settings.fontSizeAIndex]?.class || 'text-2xl sm:text-3xl font-bold';
 
           return (
               <div className={`min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex ${settings.showCanvas && settings.canvasPosition === 'right' && !isFinished ? 'items-start' : 'items-center'} justify-center p-4 transition-colors duration-200`}>
+                  
                   <div className={`flex ${settings.showCanvas && settings.canvasPosition === 'right' && !isFinished ? 'flex-row gap-4 items-start' : 'flex-col items-center'} w-full ${settings.showCanvas && settings.canvasPosition === 'right' && !isFinished ? 'max-w-[900px]' : 'max-w-lg'}`}>
+
                       <div className={`flex flex-col items-center ${settings.showCanvas && settings.canvasPosition === 'right' && !isFinished ? 'max-w-lg flex-1' : 'w-full'}`}>
-                          
+
                           {/* メインカード本体 */}
-                          <div className="bg-white dark:bg-slate-900 w-full p-6 sm:p-8 rounded-3xl shadow-lg border border-slate-200/60 dark:border-slate-800/80 transition-colors duration-200 relative" style={{ zoom: settings.displayScale }}>
-                              <div className="flex justify-between items-center mb-5 border-b border-slate-100 dark:border-slate-850 pb-3">
-                                  <h1 className="text-lg font-bold tracking-tight text-slate-800 dark:text-slate-100">{appTitleName}</h1>
-                                  <button onClick={() => setModals({ ...modals, menu: true })} className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"><IconSettings size={20} /></button>
+                          <div className="bg-white dark:bg-slate-900 w-full p-6 sm:p-8 rounded-3xl shadow-lg border border-slate-200/60 dark:border-slate-800/80 transition-colors duration-200 relative"
+                              style={{ zoom: settings.displayScale }}>
+                          
+                          {/* ヘッダーエリア */}
+                          <div className="flex justify-between items-center mb-5 border-b border-slate-100 dark:border-slate-850 pb-3">
+                              <h1 className="text-lg font-bold tracking-tight text-slate-800 dark:text-slate-100">{appTitleName}</h1>
+                              <div className="flex items-center gap-1">
+                                  {/* 設定ボタン */}
+                                  <button
+                                      onClick={() => setModals({ ...modals, menu: true })}
+                                      className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+                                      title="設定を開く"
+                                  >
+                                      <IconSettings size={20} />
+                                  </button>
                               </div>
-
-                              <div className="mb-4">
-                                  <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-1.5">
-                                      <div className="h-full bg-blue-500 dark:bg-blue-600 transition-all duration-300 ease-out" style={{ width: `${progressPercent}%` }} />
-                                  </div>
-                                  <div className="flex justify-between text-[11px] font-bold text-slate-400 dark:text-slate-500">
-                                      <span>{okCount} / {totalCount} 問マスター</span>
-                                      {activeMode !== 'all' && <span className="bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full font-bold text-[10px]">{getModeLabel()}</span>}
-                                  </div>
-                              </div>
-
-                              {!isFinished ? (
-                                  <div className="flex flex-col gap-4">
-                                      <div className="relative min-h-[200px] flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900/30 rounded-2xl p-4 border border-slate-100 dark:border-slate-800/40 overflow-hidden shadow-inner">
-                                          <button onClick={() => toggleStar(currentItemDetail?.id)} className={`absolute top-2 right-2 p-1.5 rounded-full transition-transform active:scale-90 z-20 ${currentItemDetail?.star ? 'text-amber-400' : 'text-slate-300 dark:text-slate-700 hover:text-amber-400'}`}><IconStar size={22} fill={currentItemDetail?.star ? "currentColor" : "none"} /></button>
-                                          {settings.showSpeakButton && isRevealed && (
-                                              <button onClick={() => speak(settings.reverseMode ? currentItemDetail.q : currentItemDetail.a)} className="absolute top-2 left-2 p-1.5 rounded-full transition-all active:scale-90 z-20 text-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/30"><IconVolume2 size={20} /></button>
-                                          )}
-
-                                          {settings.showCanvas && (
-                                              <div className="absolute inset-0 w-full h-full z-10 select-none">
-                                                  <canvas ref={canvasRef} onPointerDown={startDrawing} onPointerMove={draw} onPointerUp={stopDrawing} onPointerLeave={stopDrawing} onMouseDown={startDrawing} onMouseMove={draw} onMouseUp={stopDrawing} onMouseLeave={stopDrawing} onTouchStart={startDrawing} onTouchMove={draw} onTouchEnd={stopDrawing} className="w-full h-full cursor-crosshair" style={{ touchAction: 'none' }} />
-                                                  <button onClick={clearCanvas} className="absolute bottom-2 right-2 p-2 bg-white/80 dark:bg-slate-800/80 text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 rounded-lg shadow-sm border border-slate-200/40 dark:border-slate-700/60 pointer-events-auto"><IconTrash size={15} /></button>
-                                              </div>
-                                          )}
-
-                                          <div className={`${classSizeQ} leading-relaxed text-center break-words w-full px-8 mb-4 mt-2 select-none pointer-events-none z-0 text-slate-700 dark:text-slate-200`}>
-                                              {displayQuestion || '---'}
-                                          </div>
-
-                                          <div className="min-h-[64px] flex items-center justify-center w-full px-2 select-none pointer-events-none z-0">
-                                              {isRevealed ? <div className={`${classSizeA} font-serif text-blue-700 dark:text-blue-400 text-center animate-reveal`}>{displayAnswer}</div> : <div className="h-6 w-16 bg-slate-200/60 dark:bg-slate-800/60 rounded-md animate-pulse" />}
-                                          </div>
-                                      </div>
-
-                                      {settings.enableDictation && !isRevealed && (
-                                          <div className="flex flex-col items-center gap-2">
-                                              <button onClick={toggleDictation} className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${isListening ? 'bg-red-50 text-red-600 dark:bg-red-950/30' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'}`}><IconMic size={18} className={isListening ? 'animate-mic' : ''} />{isListening ? '聞き取り中...' : '答えを音声で入力'}</button>
-                                              {dictationResult && <div className="text-sm text-slate-600 bg-slate-100 px-4 py-2 rounded-xl">認識結果：<span className="font-bold">{dictationResult}</span></div>}
-                                          </div>
-                                      )}
-
-                                      {settings.enableInput && !isRevealed && (
-                                          <div className="flex gap-2">
-                                              <input ref={inputRef} type="text" value={inputValue} onChange={(e) => { setInputValue(e.target.value); setInputResult(null); }} placeholder="答えを入力..." className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold" />
-                                              <button onClick={handleInputSubmit} disabled={!inputValue.trim()} className="px-5 py-3 bg-blue-600 text-white font-bold rounded-xl text-sm">確認</button>
-                                          </div>
-                                      )}
-
-                                      {inputResult && isRevealed && (
-                                          <div className={`text-center py-2 px-4 rounded-xl font-bold text-sm ${inputResult === 'correct' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>{inputResult === 'correct' ? '正解！' : '不正解...'}</div>
-                                      )}
-
-                                      <div className="flex flex-col gap-3">
-                                          {!isRevealed && !settings.enableInput ? (
-                                              <button onClick={handleReveal} className="w-full py-3.5 bg-blue-600 text-white font-bold rounded-xl shadow-[0_3px_0_#1e40af] active:translate-y-[3px] active:shadow-none transition-all flex flex-col items-center justify-center"><span className="text-base tracking-wide">正解を見る</span><span className="text-[10px] font-normal opacity-60 mt-0.5">Space / Enter</span></button>
-                                          ) : (
-                                              <div className="flex gap-3">
-                                                  <button onClick={() => handleResult(false)} className="flex-1 py-3.5 bg-red-500 text-white font-bold rounded-xl shadow-[0_3px_0_#dc2626] active:translate-y-[3px] active:shadow-none transition-all flex flex-col items-center justify-center"><span className="text-base">もう一度</span><span className="text-[10px] font-normal opacity-60 mt-0.5">←</span></button>
-                                                  <button onClick={() => handleResult(true)} className="flex-1 py-3.5 bg-emerald-500 text-white font-bold rounded-xl shadow-[0_3px_0_#059669] active:translate-y-[3px] active:shadow-none transition-all flex flex-col items-center justify-center"><span className="text-base">マスター</span><span className="text-[10px] font-normal opacity-60 mt-0.5">→</span></button>
-                                              </div>
-                                          )}
-                                      </div>
-                                  </div>
-                              ) : (
-                                  <div className="flex flex-col items-center justify-center py-10 gap-5 text-center">
-                                      <IconCheckCircle size={56} className="text-emerald-500" />
-                                      <div><h2 className="text-xl font-bold mb-1.5">すべての学習が完了しました！</h2></div>
-                                      {activeMode !== 'all' && <button onClick={() => { const newItems = items.map(i => ({ ...i, sessionDone: false })); setItems(newItems); setActiveMode('all'); nextQuestion(newItems, 'all'); }} className="w-full py-3.5 bg-slate-100 text-slate-700 font-bold rounded-xl shadow-[0_3px_0_#94a3b8]">すべての問題に戻る</button>}
-                                  </div>
-                              )}
                           </div>
 
-                          <div className="mt-8 text-center px-4"><p className="text-xs text-slate-400">出典：新学社「漢字練習字典」</p></div>
-                      </div>
+                          {/* プログレスインジケーター */}
+                          <div className="mb-4">
+                              <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-1.5">
+                                  <div
+                                      className="h-full bg-blue-500 dark:bg-blue-600 transition-all duration-300 ease-out"
+                                      style={{ width: `${progressPercent}%` }}
+                                  />
+                              </div>
+                              <div className="flex justify-between text-[11px] font-bold text-slate-400 dark:text-slate-500">
+                                  <span>{okCount} / {totalCount} 問マスター</span>
+                                  {activeMode !== 'all' && (
+                                      <span className="bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full font-bold text-[10px]">
+                                          {getModeLabel()}
+                                      </span>
+                                  )}
+                              </div>
+                          </div>
 
-                      {/* 右側キャンバスパネル */}
-                      {settings.showCanvas && settings.canvasPosition === 'right' && !isFinished && (
-                          <div className="w-72 shrink-0 sticky top-4" style={{ zoom: settings.displayScale }}>
-                              <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl shadow-lg border border-slate-200/60 dark:border-slate-800/80">
-                                  <div className="flex items-center justify-between mb-3">
-                                      <h3 className="text-sm font-bold text-slate-500">手書きキャンバス</h3>
-                                      <button onClick={() => updateSetting('canvasPosition', 'overlay')} className="p-1 text-slate-400 hover:text-blue-500"><IconX size={14} /></button>
+                          {!isFinished ? (
+                              <div className="flex flex-col gap-4">
+                                  
+                                  {/* カードボードエリア */}
+                                  <div className="relative min-h-[200px] flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900/30 rounded-2xl p-4 border border-slate-100 dark:border-slate-800/40 overflow-hidden shadow-inner">
+                                      
+                                      {/* 要復習★ボタン */}
+                                      <button
+                                          onClick={() => toggleStar(currentItemDetail?.id)}
+                                          className={`absolute top-2 right-2 p-1.5 rounded-full transition-transform active:scale-90 z-20 ${currentItemDetail?.star ? 'text-amber-400' : 'text-slate-300 dark:text-slate-700 hover:text-amber-400'}`}
+                                          title="要復習 (Sキー)"
+                                      >
+                                          <IconStar size={22} fill={currentItemDetail?.star ? "currentColor" : "none"} />
+                                      </button>
+
+                                      {/* 読み上げボタン */}
+                                      {settings.showSpeakButton && isRevealed && (
+                                          <button
+                                              onClick={() => speak(settings.reverseMode ? currentItemDetail.q : currentItemDetail.a)}
+                                              className="absolute top-2 left-2 p-1.5 rounded-full transition-all active:scale-90 z-20 text-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/30"
+                                              title="読み上げ (Space)"
+                                          >
+                                              <IconVolume2 size={20} />
+                                          </button>
+                                      )}
+
+                                      {/* 手書きキャンバスレイヤー */}
+                                      {settings.showCanvas && (
+                                          <div className="absolute inset-0 w-full h-full z-10 select-none">
+                                              <canvas
+                                                  ref={canvasRef}
+                                                  onPointerDown={startDrawing}
+                                                  onPointerMove={draw}
+                                                  onPointerUp={stopDrawing}
+                                                  onPointerLeave={stopDrawing}
+                                                  onMouseDown={startDrawing}
+                                                  onMouseMove={draw}
+                                                  onMouseUp={stopDrawing}
+                                                  onMouseLeave={stopDrawing}
+                                                  onTouchStart={startDrawing}
+                                                  onTouchMove={draw}
+                                                  onTouchEnd={stopDrawing}
+                                                  className="w-full h-full cursor-crosshair animate-in fade-in"
+                                                  style={{ touchAction: 'none' }}
+                                              />
+                                              {/* クリアボタン */}
+                                              <button
+                                                  onClick={clearCanvas}
+                                                  className="absolute bottom-2 right-2 p-2 bg-white/80 dark:bg-slate-800/80 text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 rounded-lg shadow-sm border border-slate-200/40 dark:border-slate-700/60 transition-all flex items-center justify-center pointer-events-auto"
+                                                  title="書いた文字を消去"
+                                              >
+                                                  <IconTrash size={15} />
+                                              </button>
+                                          </div>
+                                      )}
+
+                                      {/* 問題テキスト */}
+                                      <div className={`${classSizeQ} leading-relaxed text-center break-words w-full px-8 mb-4 mt-2 select-none pointer-events-none z-0 text-slate-700 dark:text-slate-200`}>
+                                          {displayQuestion || '---'}
+                                      </div>
+
+                                      {/* 答えテキスト */}
+                                      <div className="min-h-[64px] flex items-center justify-center w-full px-2 select-none pointer-events-none z-0">
+                                          {isRevealed ? (
+                                              <div className={`${classSizeA} font-serif text-blue-700 dark:text-blue-400 text-center animate-reveal`}>
+                                                  {displayAnswer}
+                                              </div>
+                                          ) : (
+                                              <div className="h-6 w-16 bg-slate-200/60 dark:bg-slate-800/60 rounded-md animate-pulse" />
+                                          )}
+                                      </div>
                                   </div>
-                                  <div className="relative rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-700 bg-slate-50" style={{aspectRatio: '3/4'}}>
-                                      <canvas ref={canvasRightRef} onPointerDown={startDrawing} onPointerMove={draw} onPointerUp={stopDrawing} onPointerLeave={stopDrawing} onMouseDown={startDrawing} onMouseMove={draw} onMouseUp={stopDrawing} onMouseLeave={stopDrawing} onTouchStart={startDrawing} onTouchMove={draw} onTouchEnd={stopDrawing} className="w-full h-full cursor-crosshair" style={{ touchAction: 'none' }} />
+
+                                  {/* 聞き取りエリア */}
+                                  {settings.enableDictation && !isRevealed && (
+                                      <div className="flex flex-col items-center gap-2">
+                                          <button
+                                              onClick={toggleDictation}
+                                              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${isListening ? 'bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400 border border-red-200 dark:border-red-800/30' : 'bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/30 dark:text-blue-300 dark:hover:bg-blue-900/30 border border-blue-200 dark:border-blue-800/30'}`}
+                                          >
+                                              <IconMic size={18} className={isListening ? 'animate-mic' : ''} />
+                                              {isListening ? '聞き取り中...' : '答えを音声で入力'}
+                                          </button>
+                                          {dictationResult && (
+                                              <div className="text-sm text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-xl">
+                                                  認識結果：<span className="font-bold text-slate-800 dark:text-slate-200">{dictationResult}</span>
+                                              </div>
+                                          )}
+                                      </div>
+                                  )}
+
+                                  {/* テキスト入力エリア */}
+                                  {settings.enableInput && !isRevealed && (
+                                      <div className="flex flex-col gap-2">
+                                          <div className="flex gap-2">
+                                              <input
+                                                  ref={inputRef}
+                                                  type="text"
+                                                  value={inputValue}
+                                                  onChange={(e) => { setInputValue(e.target.value); setInputResult(null); }}
+                                                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleInputSubmit(); } }}
+                                                  placeholder="答えを入力..."
+                                                  className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-bold"
+                                              />
+                                              <button
+                                                  onClick={handleInputSubmit}
+                                                  disabled={!inputValue.trim()}
+                                                  className="px-5 py-3 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-200 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all text-sm"
+                                              >
+                                                  確認
+                                              </button>
+                                          </div>
+                                      </div>
+                                  )}
+
+                                  {/* 入力判定結果 */}
+                                  {inputResult && isRevealed && (
+                                      <div className={`text-center py-2 px-4 rounded-xl font-bold text-sm animate-reveal ${inputResult === 'correct' ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/30' : 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/30'}`}>
+                                          {inputResult === 'correct' ? '正解！' : '不正解...'}
+                                      </div>
+                                  )}
+
+                                  {/* アクションボタン群 */}
+                                  <div className="flex flex-col gap-3">
+                                      {!isRevealed && !settings.enableInput ? (
+                                          <button
+                                              onClick={handleReveal}
+                                              className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-[0_3px_0_#1e40af] active:translate-y-[3px] active:shadow-none transition-all flex flex-col items-center justify-center leading-tight"
+                                          >
+                                              <span className="text-base tracking-wide">正解を見る</span>
+                                              <span className="text-[10px] font-normal opacity-60 mt-0.5">Space / Enter</span>
+                                          </button>
+                                      ) : (
+                                          <div className="flex gap-3 animate-in fade-in duration-200">
+                                              <button
+                                                  onClick={() => handleResult(false)}
+                                                  className="flex-1 py-3.5 bg-red-500 hover:bg-red-400 dark:bg-red-600 dark:hover:bg-red-500 text-white font-bold rounded-xl shadow-[0_3px_0_#dc2626] dark:shadow-[0_3px_0_#991b1b] active:translate-y-[3px] active:shadow-none transition-all flex flex-col items-center justify-center leading-tight"
+                                              >
+                                                  <span className="text-base">もう一度</span>
+                                                  <span className="text-[10px] font-normal opacity-60 mt-0.5">←</span>
+                                              </button>
+                                              <button
+                                                  onClick={() => handleResult(true)}
+                                                  className="flex-1 py-3.5 bg-emerald-500 hover:bg-emerald-400 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-bold rounded-xl shadow-[0_3px_0_#059669] dark:shadow-[0_3px_0_#047857] active:translate-y-[3px] active:shadow-none transition-all flex flex-col items-center justify-center leading-tight"
+                                              >
+                                                  <span className="text-base">マスター</span>
+                                                  <span className="text-[10px] font-normal opacity-60 mt-0.5">→</span>
+                                              </button>
+                                          </div>
+                                      )}
                                   </div>
-                                  <button onClick={clearCanvas} className="mt-3 w-full py-2 flex items-center justify-center gap-2 bg-slate-100 text-slate-500 rounded-xl text-xs font-bold"><IconTrash size={14} /> 消去</button>
+                              </div>
+                          ) : (
+                              <div className="flex flex-col items-center justify-center py-10 gap-5 text-center">
+                                  <IconCheckCircle size={56} className="text-emerald-500 animate-in zoom-in" />
+                                  <div>
+                                      <h2 className="text-xl font-bold mb-1.5">すべての学習が完了しました！</h2>
+                                      <p className="text-sm text-slate-400 dark:text-slate-500">対象の問題をすべてマスターしました。</p>
+                                  </div>
+                                  {activeMode !== 'all' && (
+                                      <button
+                                          onClick={() => { 
+                                              const newItems = items.map(i => ({ ...i, sessionDone: false }));
+                                              setItems(newItems);
+                                              setActiveMode('all'); 
+                                              nextQuestion(newItems, 'all'); 
+                                          }}
+                                          className="w-full py-3.5 mt-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 font-bold rounded-xl shadow-[0_3px_0_#94a3b8] dark:shadow-[0_3px_0_#1e293b] active:translate-y-[3px] active:shadow-none transition-all"
+                                      >
+                                          すべての問題に戻る
+                                      </button>
+                                  )}
+                              </div>
+                          )}
+                          </div>
+
+                      {/* タブ分けされた統合設定モーダル */}
+                      {modals.menu && (
+                          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200" onClick={(e) => e.target === e.currentTarget && setModals({...modals, menu: false})}>
+                              <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl shadow-xl overflow-hidden flex flex-col max-h-[90vh] border border-slate-100 dark:border-slate-700">
+                                  
+                                  {/* ヘッダー */}
+                                  <div className="flex justify-between items-center p-5 border-b border-slate-100 dark:border-slate-700 shrink-0">
+                                      <div>
+                                          <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">オプション設定</h3>
+                                          <p className="text-xs text-slate-400 dark:text-slate-500">お好みの環境にカスタマイズできます</p>
+                                      </div>
+                                      <button onClick={() => setModals({...modals, menu: false})} className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg"><IconX size={20} /></button>
+                                  </div>
+
+                                  {/* タブナビゲーション */}
+                                  <div className="flex border-b border-slate-100 dark:border-slate-700 shrink-0 bg-slate-50 dark:bg-slate-900/20 p-1.5 gap-1">
+                                      <button
+                                          onClick={() => setActiveTab('study')}
+                                          className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${activeTab === 'study' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'}`}
+                                      >
+                                          学習設定
+                                      </button>
+                                      <button
+                                          onClick={() => setActiveTab('display')}
+                                          className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${activeTab === 'display' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'}`}
+                                      >
+                                          画面表示
+                                      </button>
+                                      <button
+                                          onClick={() => setActiveTab('preset')}
+                                          className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${activeTab === 'preset' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'}`}
+                                      >
+                                          プリセット
+                                      </button>
+                                      <button
+                                          onClick={() => setActiveTab('data')}
+                                          className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${activeTab === 'data' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'}`}
+                                      >
+                                          データ管理
+                                      </button>
+                                      {LEADERBOARD_URL && (
+                                          <button
+                                              onClick={() => { setActiveTab('leaderboard'); fetchLeaderboardInline('total'); }}
+                                              className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${activeTab === 'leaderboard' ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'}`}
+                                          >
+                                              リーダーボード
+                                          </button>
+                                      )}
+                                  </div>
+                                  
+                                  {/* タブコンテンツ */}
+                                  <div className="p-5 overflow-y-auto flex-1 space-y-6">
+                                      
+                                      {/* TABS: STUDY */}
+                                      {activeTab === 'study' && (
+                                          <div className="space-y-5 animate-in fade-in duration-150">
+
+                                              {/* 手書きキャンバス */}
+                                              <div className="flex items-start justify-between gap-4">
+                                                  <div className="space-y-0.5">
+                                                      <span className="font-semibold text-sm">手書きキャンバス</span>
+                                                      <p className="text-xs text-slate-400 dark:text-slate-500 leading-normal">
+                                                          カード上で指やペンで手書きして練習できるようにします。
+                                                      </p>
+                                                  </div>
+                                                  <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                                                      <input type="checkbox" className="sr-only peer" checked={settings.showCanvas} onChange={(e) => updateSetting('showCanvas', e.target.checked)} />
+                                                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                                  </label>
+                                              </div>
+
+                                              {/* キャンバス位置 */}
+                                              {settings.showCanvas && (
+                                                  <div className="space-y-2 pl-4 border-l-2 border-blue-500 animate-in slide-in-from-left duration-200">
+                                                      <span className="font-bold text-xs text-slate-500 dark:text-slate-400">キャンバス位置</span>
+                                                      <div className="flex bg-slate-100 dark:bg-slate-900/60 rounded-xl p-1 gap-1">
+                                                          <button
+                                                              onClick={() => updateSetting('canvasPosition', 'overlay')}
+                                                              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${settings.canvasPosition === 'overlay' ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                                                          >
+                                                              カードのみ
+                                                          </button>
+                                                          <button
+                                                              onClick={() => updateSetting('canvasPosition', 'right')}
+                                                              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${settings.canvasPosition === 'right' ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                                                          >
+                                                              カード+右パネル
+                                                          </button>
+                                                      </div>
+                                                  </div>
+                                              )}
+
+                                              {/* キーボード入力 */}
+                                              <div className="flex items-start justify-between gap-4 border-t border-slate-100 dark:border-slate-700 pt-4">
+                                                  <div className="space-y-0.5">
+                                                      <span className="font-semibold text-sm">キーボード入力モード</span>
+                                                      <p className="text-xs text-slate-400 dark:text-slate-500 leading-normal">
+                                                          答えをキーボードで入力して確認します。
+                                                      </p>
+                                                  </div>
+                                                  <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                                                      <input type="checkbox" className="sr-only peer" checked={settings.enableInput} onChange={(e) => updateSetting('enableInput', e.target.checked)} />
+                                                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                                  </label>
+                                              </div>
+
+                                              {/* 出題の反転 */}
+                                              <div className="flex items-start justify-between gap-4 border-t border-slate-100 dark:border-slate-700 pt-4">
+                                                  <div className="space-y-0.5">
+                                                      <span className="font-semibold text-sm">出題の反転 (問題 ⇆ 答え)</span>
+                                                      <p className="text-xs text-slate-400 dark:text-slate-500 leading-normal">
+                                                          問題と答えの表示をひっくり返します。
+                                                      </p>
+                                                  </div>
+                                                  <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                                                      <input type="checkbox" className="sr-only peer" checked={settings.reverseMode} onChange={(e) => updateSetting('reverseMode', e.target.checked)} />
+                                                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                                  </label>
+                                              </div>
+
+                                              {/* ── 読み上げセクション ── */}
+                                              <div className="border-t border-slate-100 dark:border-slate-700 pt-4 space-y-4">
+                                                  <div className="flex items-center gap-2 mb-1">
+                                                      <IconVolume2 size={16} className="text-blue-600 dark:text-blue-400" />
+                                                      <span className="font-bold text-sm text-blue-700 dark:text-blue-400">読み上げ</span>
+                                                  </div>
+
+                                                  {/* 自動読み上げ */}
+                                                  <div className="flex items-start justify-between gap-4">
+                                                      <div className="space-y-0.5">
+                                                          <span className="font-semibold text-sm">自動音声読み上げ</span>
+                                                          <p className="text-xs text-slate-400 dark:text-slate-500 leading-normal">
+                                                              解答表示時に自動的に音声を流します。
+                                                          </p>
+                                                      </div>
+                                                      <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                                                          <input type="checkbox" className="sr-only peer" checked={settings.autoSpeak} onChange={(e) => updateSetting('autoSpeak', e.target.checked)} />
+                                                          <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                                      </label>
+                                                  </div>
+
+                                                  {/* 個別読み上げボタン表示 */}
+                                                  <div className="flex items-start justify-between gap-4">
+                                                      <div className="space-y-0.5">
+                                                          <span className="font-semibold text-sm">読み上げボタンを表示</span>
+                                                          <p className="text-xs text-slate-400 dark:text-slate-500 leading-normal">
+                                                              答え表示時にスピーカーアイコンを表示します。
+                                                          </p>
+                                                      </div>
+                                                      <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                                                          <input type="checkbox" className="sr-only peer" checked={settings.showSpeakButton} onChange={(e) => updateSetting('showSpeakButton', e.target.checked)} />
+                                                          <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                                      </label>
+                                                  </div>
+
+                                                  {/* キーボード読み上げ */}
+                                                  <div className="flex items-start justify-between gap-4">
+                                                      <div className="space-y-0.5">
+                                                          <span className="font-semibold text-sm">キーボードで読み上げ</span>
+                                                          <p className="text-xs text-slate-400 dark:text-slate-500 leading-normal">
+                                                              Space/Enterキーで読み上げる機能を有効にします。
+                                                          </p>
+                                                      </div>
+                                                      <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                                                          <input type="checkbox" className="sr-only peer" checked={settings.enableKeyboardSpeak} onChange={(e) => updateSetting('enableKeyboardSpeak', e.target.checked)} />
+                                                          <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                                      </label>
+                                                  </div>
+
+                                                  {/* 読み上げ速度 */}
+                                                  {settings.autoSpeak && (
+                                                      <div className="space-y-2 pl-4 border-l-2 border-blue-600 animate-in slide-in-from-left duration-200">
+                                                          <span className="font-bold text-xs text-slate-500 dark:text-slate-400">読み上げスピード</span>
+                                                          <div className="flex bg-slate-100 dark:bg-slate-900/60 rounded-xl p-1 gap-1">
+                                                              {speechRates.map((rate, idx) => (
+                                                                  <button
+                                                                      key={idx}
+                                                                      onClick={() => updateSetting('rateIndex', idx)}
+                                                                      className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${settings.rateIndex === idx ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                                                                  >
+                                                                      {rate.label} ({rate.value}x)
+                                                                  </button>
+                                                              ))}
+                                                          </div>
+                                                      </div>
+                                                  )}
+                                              </div>
+
+                                              {/* ── 聞き取りセクション ── */}
+                                              <div className="border-t border-slate-100 dark:border-slate-700 pt-4 space-y-4">
+                                                  <div className="flex items-center gap-2 mb-1">
+                                                      <IconMic size={16} className="text-blue-600 dark:text-blue-400" />
+                                                      <span className="font-bold text-sm text-blue-700 dark:text-blue-400">聞き取り</span>
+                                                  </div>
+
+                                                  {/* 音声認識 */}
+                                                  <div className="flex items-start justify-between gap-4">
+                                                      <div className="space-y-0.5">
+                                                          <span className="font-semibold text-sm">聞き取り練習モード</span>
+                                                          <p className="text-xs text-slate-400 dark:text-slate-500 leading-normal">
+                                                              答えを音声で入力できるマイクボタンを表示します。
+                                                          </p>
+                                                      </div>
+                                                      <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                                                          <input type="checkbox" className="sr-only peer" checked={settings.enableDictation} onChange={(e) => updateSetting('enableDictation', e.target.checked)} />
+                                                          <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                                      </label>
+                                                  </div>
+                                              </div>
+                                          </div>
+                                      )}
+
+                                      {/* TABS: DISPLAY */}
+                                      {activeTab === 'display' && (
+                                          <div className="space-y-5 animate-in fade-in duration-150">
+                                              
+                                              {/* 表示倍率 */}
+                                              <div className="space-y-2">
+                                                  <span className="font-semibold text-sm">全体の表示倍率</span>
+                                                  <p className="text-xs text-slate-400 dark:text-slate-500 leading-normal">カード全体の拡大率。</p>
+                                                  <div className="flex bg-slate-100 dark:bg-slate-900/60 rounded-xl p-1 gap-1">
+                                                      {[1, 1.25, 1.5, 1.75, 2].map(s => (
+                                                          <button
+                                                              key={s}
+                                                              onClick={() => updateSetting('displayScale', s)}
+                                                              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${settings.displayScale === s ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                                                          >
+                                                              {s === 1 ? '等倍' : `${s}倍`}
+                                                          </button>
+                                                      ))}
+                                                  </div>
+                                              </div>
+                                              
+                                              {/* 問題文のフォントサイズ */}
+                                              <div className="space-y-2">
+                                                  <span className="font-semibold text-sm">問題文の文字サイズ</span>
+                                                  <div className="flex bg-slate-100 dark:bg-slate-900/60 rounded-xl p-1 gap-1">
+                                                      {fontSizesQ.map((fs, idx) => (
+                                                          <button
+                                                              key={idx}
+                                                              onClick={() => updateSetting('fontSizeQIndex', idx)}
+                                                              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${settings.fontSizeQIndex === idx ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                                                          >
+                                                              {fs.label}
+                                                          </button>
+                                                      ))}
+                                                  </div>
+                                              </div>
+
+                                              {/* 答えのフォントサイズ */}
+                                              <div className="space-y-2 border-t border-slate-100 dark:border-slate-700 pt-4">
+                                                  <span className="font-semibold text-sm">答えの文字サイズ</span>
+                                                  <div className="flex bg-slate-100 dark:bg-slate-900/60 rounded-xl p-1 gap-1">
+                                                      {fontSizesA.map((fs, idx) => (
+                                                          <button
+                                                              key={idx}
+                                                              onClick={() => updateSetting('fontSizeAIndex', idx)}
+                                                              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${settings.fontSizeAIndex === idx ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                                                          >
+                                                              {fs.label}
+                                                          </button>
+                                                      ))}
+                                                  </div>
+                                              </div>
+
+                                              {/* ダークモード */}
+                                              <div className="flex items-start justify-between gap-4 border-t border-slate-100 dark:border-slate-700 pt-4">
+                                                  <div className="space-y-0.5">
+                                                      <span className="font-semibold text-sm">ダークモード</span>
+                                                      <p className="text-xs text-slate-400 dark:text-slate-500">画面全体の配色を暗く調整します。</p>
+                                                  </div>
+                                                  <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                                                      <input type="checkbox" className="sr-only peer" checked={settings.darkMode} onChange={(e) => updateSetting('darkMode', e.target.checked)} />
+                                                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                                  </label>
+                                              </div>
+                                          </div>
+                                      )}
+
+                                      {/* TABS: PRESET */}
+                                      {activeTab === 'preset' && (
+                                          <div className="space-y-5 animate-in fade-in duration-150">
+                                              <div className="space-y-2">
+                                                  <p className="text-xs text-slate-400 dark:text-slate-500">
+                                                      よく使う設定の組み合わせを適用できます。
+                                                  </p>
+                                              </div>
+
+                                              {/* プリセット一覧 */}
+                                              <div className="space-y-2">
+                                                  <span className="font-bold text-xs text-slate-500 dark:text-slate-400">プリセット一覧</span>
+                                                  <div className="grid grid-cols-1 gap-2">
+                                                      {presets.map(preset => (
+                                                          <button
+                                                              key={preset.id}
+                                                              onClick={() => applyPreset(preset)}
+                                                              className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/40 hover:bg-blue-50 dark:hover:bg-blue-950/20 border border-slate-100 dark:border-slate-700/60 transition-colors group text-left"
+                                                          >
+                                                              <div className="flex items-center gap-3">
+                                                                  <IconBookOpen size={18} className="text-blue-600 dark:text-blue-400 group-hover:scale-105 transition-transform" />
+                                                                  <div>
+                                                                      <div className="text-sm font-bold text-slate-700 dark:text-slate-200">{preset.name}</div>
+                                                                      <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
+                                                                          {preset.settings.darkMode ? 'ダーク' : 'ライト'} · 
+                                                                          {preset.settings.autoSpeak ? '自動読上' : '手動読上'} · 
+                                                                          {preset.settings.reverseMode ? '反転' : '通常'} · 
+                                                                          {preset.settings.enableDictation ? '聞取ON' : '聞取OFF'} · 
+                                                                          {preset.settings.enableInput ? '入力ON' : '入力OFF'}
+                                                                      </div>
+                                                                  </div>
+                                                              </div>
+                                                              {['preset_kanji_normal', 'preset_kanji_write', 'preset_english_normal', 'preset_english_write', 'preset_english_type', 'preset_english_listen'].includes(preset.id) ? null : (
+                                                                  <button
+                                                                      onClick={(e) => deletePreset(preset.id, e)}
+                                                                      className="p-1.5 text-slate-400 hover:text-red-500 transition-colors"
+                                                                      title="削除"
+                                                                  >
+                                                                      <IconTrash size={14} />
+                                                                  </button>
+                                                              )}
+                                                          </button>
+                                                      ))}
+                                                  </div>
+                                              </div>
+
+                                              {/* 新規プリセット保存 */}
+                                              <div className="border-t border-slate-100 dark:border-slate-700 pt-4 space-y-3">
+                                                  <span className="font-bold text-xs text-slate-500 dark:text-slate-400">現在の設定を保存</span>
+                                                  {!showPresetSave ? (
+                                                      <button
+                                                          onClick={() => setShowPresetSave(true)}
+                                                          className="w-full py-2.5 flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/20 dark:hover:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-bold rounded-xl border border-blue-200 dark:border-blue-800/30 transition-colors text-sm"
+                                                      >
+                                                          <IconSave size={16} /> プリセットを新規作成
+                                                      </button>
+                                                  ) : (
+                                                      <div className="flex gap-2 animate-in fade-in duration-200">
+                                                          <input
+                                                              type="text"
+                                                              value={presetName}
+                                                              onChange={(e) => setPresetName(e.target.value)}
+                                                              onKeyDown={(e) => e.key === 'Enter' && savePreset()}
+                                                              placeholder="プリセット名"
+                                                              className="flex-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                              autoFocus
+                                                          />
+                                                          <button
+                                                              onClick={savePreset}
+                                                              disabled={!presetName.trim()}
+                                                              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-200 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition-all"
+                                                          >
+                                                              保存
+                                                          </button>
+                                                          <button
+                                                              onClick={() => { setShowPresetSave(false); setPresetName(''); }}
+                                                              className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-500 dark:text-slate-300 rounded-xl text-sm font-bold transition-all"
+                                                          >
+                                                              キャンセル
+                                                          </button>
+                                                      </div>
+                                                  )}
+                                              </div>
+                                          </div>
+                                      )}
+
+                                      {/* TABS: DATA */}
+                                      {activeTab === 'data' && (
+                                          <div className="space-y-4 animate-in fade-in duration-150">
+                                              
+                                              {/* ツールボタン群 */}
+                                              <div className="grid grid-cols-2 gap-3">
+                                                  <button
+                                                      onClick={() => { setModals({menu: false, list: true}); setListFilter('all'); }}
+                                                      className="flex flex-col items-center justify-center p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/40 hover:bg-blue-50 dark:hover:bg-blue-950/20 border border-slate-100 dark:border-slate-700/60 transition-colors group"
+                                                  >
+                                                      <IconList size={22} className="text-blue-600 dark:text-blue-400 mb-1.5 group-hover:scale-105 transition-transform" />
+                                                      <span className="text-xs font-bold">問題リスト表示</span>
+                                                      <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">問題の一覧と個別★編集</span>
+                                                  </button>
+
+                                                  <button
+                                                      onClick={() => { setModals({menu: false, edit: true}); setTempRawText(rawText); }}
+                                                      className="flex flex-col items-center justify-center p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/40 hover:bg-blue-50 dark:hover:bg-blue-950/20 border border-slate-100 dark:border-slate-700/60 transition-colors group"
+                                                  >
+                                                      <IconEdit size={22} className="text-blue-600 dark:text-blue-400 mb-1.5 group-hover:scale-105 transition-transform" />
+                                                      <span className="text-xs font-bold">問題のデータ編集</span>
+                                                      <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">データの編集</span>
+                                                  </button>
+                                              </div>
+
+                                              {/* エクスポート/インポート */}
+                                              <div className="border-t border-slate-100 dark:border-slate-700 pt-4 space-y-2">
+                                                  <div className="flex items-center gap-2 mb-1">
+                                                      <IconFolderOpen size={16} className="text-blue-600 dark:text-blue-400" />
+                                                      <span className="font-bold text-sm text-blue-700 dark:text-blue-400">保存と読込</span>
+                                                  </div>
+                                                  <p className="text-xs text-slate-400 dark:text-slate-500 leading-normal">
+                                                      JSONファイルに保存/復元できます。
+                                                  </p>
+                                                  <div className="grid grid-cols-2 gap-2">
+                                                      <button
+                                                          onClick={exportJSON}
+                                                          className="py-2.5 flex items-center justify-center gap-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/20 dark:hover:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 font-bold rounded-xl border border-emerald-200 dark:border-emerald-800/30 transition-colors text-xs"
+                                                      >
+                                                          <IconSave size={14} /> エクスポート
+                                                      </button>
+                                                      <button
+                                                          onClick={importJSON}
+                                                          className="py-2.5 flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/20 dark:hover:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-bold rounded-xl border border-blue-200 dark:border-blue-800/30 transition-colors text-xs"
+                                                      >
+                                                          <IconFolderOpen size={14} /> インポート
+                                                      </button>
+                                                  </div>
+                                              </div>
+
+                                              {/* 進捗リセットボタン */}
+                                              <div className="pt-4 border-t border-slate-100 dark:border-slate-700/60">
+                                                  <button
+                                                      onClick={resetAllData}
+                                                      className="w-full py-3 flex items-center justify-center gap-2 text-rose-500 font-bold rounded-xl bg-rose-50/50 dark:bg-rose-500/10 hover:bg-rose-100/50 dark:hover:bg-rose-500/20 transition-colors"
+                                                  >
+                                                      <IconRotateCcw size={18} /> 学習進捗をすべてリセット
+                                                  </button>
+                                              </div>
+                                          </div>
+                                      )}
+
+                                      {/* TABS: LEADERBOARD */}
+                                      {activeTab === 'leaderboard' && (
+                                          <div className="space-y-5 animate-in fade-in duration-150">
+                                              {/* 名前設定 */}
+                                              <div className="space-y-3 p-4 rounded-2xl bg-amber-50/50 dark:bg-amber-950/10">
+                                                  <div className="flex items-center gap-2">
+                                                      <IconTrophy size={16} className="text-amber-500" />
+                                                      <span className="font-bold text-sm text-amber-600 dark:text-amber-400">リーダーボード設定</span>
+                                                  </div>
+                                                  <div className="space-y-1.5">
+                                                      <label className="font-bold text-xs text-slate-500 dark:text-slate-400">あなたの表示名</label>
+                                                      <input
+                                                          type="text"
+                                                          value={settings.leaderboardName}
+                                                          onChange={(e) => updateSetting('leaderboardName', e.target.value)}
+                                                          placeholder="例: たろう"
+                                                          className="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 focus:outline-none focus:border-amber-400 dark:focus:border-amber-500"
+                                                      />
+                                                  </div>
+                                              </div>
+
+                                              {/* ランキング表示 */}
+                                              <div className="space-y-3 border-t border-slate-100 dark:border-slate-700 pt-4">
+                                                  <div className="flex items-center gap-2 mb-1">
+                                                      <span className="font-bold text-sm text-amber-600 dark:text-amber-400">ランキング</span>
+                                                  </div>
+                                                  <div className="flex gap-1 bg-slate-100 dark:bg-slate-900/60 rounded-xl p-1">
+                                                      {[{ id: 'total', label: '総合' },{ id: 'daily', label: '本日' },{ id: 'weekly', label: '今週' },{ id: 'monthly', label: '今月' },{ id: 'streak', label: '連続' },{ id: 'time', label: '時間' }].map(t => (
+                                                          <button key={t.id} onClick={() => fetchLeaderboardInline(t.id)} className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all ${leaderboardType === t.id ? 'bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}>{t.label}</button>
+                                                      ))}
+                                                  </div>
+                                                  <div className="flex justify-between items-center">
+                                                      <span className="text-[10px] text-slate-400">{leaderboardData?.updatedAt ? `更新: ${leaderboardData.updatedAt}` : ''}</span>
+                                                      <button onClick={() => fetchLeaderboardInline(leaderboardType)} className="text-xs text-slate-400 hover:text-amber-500 transition-colors">更新</button>
+                                                  </div>
+                                                  <div className="space-y-1.5 max-h-64 overflow-y-auto">
+                                                      {leaderboardLoading && <div className="text-center py-8 text-slate-400 text-xs font-bold">読み込み中...</div>}
+                                                      {!leaderboardLoading && leaderboardData?.error && <div className="text-center py-8 text-slate-400 text-xs">{leaderboardData.error}</div>}
+                                                      {!leaderboardLoading && leaderboardData?.rankings && leaderboardData.rankings.length === 0 && <div className="text-center py-8 text-slate-400 text-xs font-bold">まだデータがありません</div>}
+                                                      {!leaderboardLoading && leaderboardData?.rankings && leaderboardData.rankings.map((r, i) => {
+                                                          const rankColors = ['text-amber-500', 'text-slate-400', 'text-orange-700'];
+                                                          const bgColors = ['bg-amber-50/50 dark:bg-amber-950/20', 'bg-slate-50 dark:bg-slate-800/40', 'bg-orange-50/30 dark:bg-orange-950/10'];
+                                                          const rank = r.rank || (i + 1);
+                                                          return (<div key={r.userId || i} className={`flex items-center gap-2.5 px-3 py-2 rounded-lg ${rank <= 3 ? bgColors[rank-1] : 'bg-white dark:bg-slate-800/20'}`}><span className={`w-6 text-center font-bold text-xs ${rank <= 3 ? rankColors[rank-1] : 'text-slate-400'}`}>{rank}</span><span className="flex-1 text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{r.userName}</span><span className="text-xs font-bold text-amber-600 dark:text-amber-400 shrink-0">{leaderboardType === 'streak' ? `${r.streak || r.mastered}日` : leaderboardType === 'time' ? `${Math.floor((r.seconds || r.mastered) / 60)}分` : `${r.mastered}問`}</span></div>);
+                                                      })}
+                                                  </div>
+                                                  <button onClick={openLeaderboard} className="w-full py-2.5 flex items-center justify-center gap-2 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/20 dark:hover:bg-amber-900/30 text-amber-700 dark:text-amber-300 font-bold rounded-xl border border-amber-200 dark:border-amber-800/30 transition-colors text-xs">別窓で開く</button>
+                                              </div>
+                                          </div>
+                                      )}
+                                  </div>
+
+                                  {/* フッター */}
+                                  <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700 flex justify-end items-center shrink-0">
+                                      <button
+                                          onClick={() => setModals({...modals, menu: false})}
+                                          className="py-2.5 px-6 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-all"
+                                      >
+                                          閉じる
+                                      </button>
+                                  </div>
                               </div>
                           </div>
                       )}
+
+                      {/* 問題リスト・集中学習 モーダル */}
+                      {modals.list && (
+                          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => e.target === e.currentTarget && setModals({...modals, list: false})}>
+                              <div className="bg-white dark:bg-slate-800 w-full max-w-2xl h-[85vh] flex flex-col rounded-3xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-slate-100 dark:border-slate-700">
+                                  <div className="flex justify-between items-center p-5 border-b border-slate-100 dark:border-slate-700 shrink-0">
+                                      <h3 className="text-lg font-bold">問題リスト</h3>
+                                      <button onClick={() => setModals({...modals, list: false, menu: true})} className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><IconX size={24} /></button>
+                                  </div>
+
+                                  <div className="flex gap-1.5 p-3 overflow-x-auto border-b border-slate-100 dark:border-slate-700 shrink-0 no-scrollbar bg-slate-50/50 dark:bg-slate-900/30">
+                                      {[
+                                          { id: 'all', label: 'すべて' },
+                                          { id: 'star', label: '★ 要復習' },
+                                          { id: 'ng', label: '未マスター' },
+                                          { id: 'ok', label: 'マスター済' }
+                                      ].map(f => (
+                                          <button
+                                              key={f.id}
+                                              onClick={() => setListFilter(f.id)}
+                                              className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${listFilter === f.id ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'}`}
+                                          >
+                                              {f.label}
+                                          </button>
+                                      ))}
+                                  </div>
+
+                                  <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
+                                      {items.filter(i => {
+                                          if (listFilter === 'star') return i.star;
+                                          if (listFilter === 'ng') return !i.ok;
+                                          if (listFilter === 'ok') return i.ok;
+                                          return true;
+                                      }).map(item => (
+                                          <div key={item.id} className="flex gap-4 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/40">
+                                              <div className="flex flex-col gap-3 items-center shrink-0">
+                                                  {item.ok ? <IconCheckCircle size={20} className="text-emerald-500 animate-in zoom-in-50" /> : <div className="w-5 h-5 rounded-full border-2 border-slate-200 dark:border-slate-700" />}
+                                                  <button onClick={() => toggleStar(item.id)}>
+                                                      <IconStar size={20} className={item.star ? "text-amber-400" : "text-slate-300 dark:text-slate-700"} fill={item.star ? "currentColor" : "none"} />
+                                                  </button>
+                                              </div>
+                                              <div>
+                                                  <div className="font-bold mb-1 leading-snug">{item.q}</div>
+                                                  <div className="text-sm font-serif text-blue-700 dark:text-blue-400 font-bold">{item.a}</div>
+                                              </div>
+                                          </div>
+                                      ))}
+                                      {items.filter(i => {
+                                          if (listFilter === 'star') return i.star;
+                                          if (listFilter === 'ng') return !i.ok;
+                                          if (listFilter === 'ok') return i.ok;
+                                          return true;
+                                      }).length === 0 && (
+                                          <div className="text-center p-10 text-slate-400 font-bold italic">該当する問題がありません</div>
+                                      )}
+                                  </div>
+
+                                  <div className="p-4 border-t border-slate-100 dark:border-slate-700 shrink-0 bg-white dark:bg-slate-800 flex gap-3">
+                                      <button
+                                          onClick={() => setModals({...modals, list: false, menu: true})}
+                                          className="py-3.5 px-6 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 font-bold rounded-xl text-sm"
+                                      >
+                                          戻る
+                                      </button>
+                                      <button
+                                          onClick={startFocusedLearning}
+                                          disabled={items.filter(i => {
+                                              if (listFilter === 'star') return i.star;
+                                              if (listFilter === 'ng') return !i.ok;
+                                              if (listFilter === 'ok') return i.ok;
+                                              return true;
+                                          }).length === 0}
+                                          className="flex-1 py-3.5 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-white font-bold rounded-xl active:scale-[0.98] disabled:scale-100 transition-all text-sm"
+                                      >
+                                          表示中の条件で集中学習を開始
+                                      </button>
+                                  </div>
+                              </div>
+                          </div>
+                      )}
+
+                      {/* 問題データの編集モーダル */}
+                      {modals.edit && (
+                          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => e.target === e.currentTarget && setModals({...modals, edit: false})}>
+                              <div className="bg-white dark:bg-slate-800 w-full max-w-xl h-[85vh] flex flex-col rounded-3xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-slate-100 dark:border-slate-700">
+                                  <div className="flex justify-between items-center p-5 border-b border-slate-100 dark:border-slate-700 shrink-0">
+                                      <h3 className="text-lg font-bold">問題データの編集</h3>
+                                      <button onClick={() => setModals({...modals, edit: false, menu: true})} className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><IconX size={24} /></button>
+                                  </div>
+
+                                  <div className="flex-1 p-4 flex flex-col gap-3 min-h-0">
+                                      <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                                          Excelやスプレッドシートからコピーしたデータをそのまま貼り付けられます。<br />
+                                          フォーマット：<span className="font-bold bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-blue-700 dark:text-blue-400 font-mono">問題 [スペース か タブ か カンマ] 答え</span>
+                                      </p>
+                                      <textarea
+                                          value={tempRawText}
+                                          onChange={(e) => setTempRawText(e.target.value)}
+                                          className="flex-1 w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-all"
+                                          placeholder={"ここに問題を貼り付けます\n例：\napple\tりんご\nbanana\tバナナ"}
+                                      />
+                                  </div>
+
+                                  <div className="p-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex gap-3 shrink-0">
+                                      <button
+                                          onClick={resetToDefaultData}
+                                          className="px-4 py-3.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold rounded-xl transition-all text-sm"
+                                      >
+                                          デフォルトに戻す
+                                      </button>
+                                      <button
+                                          onClick={() => setModals({...modals, edit: false, menu: true})}
+                                          className="px-4 py-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 font-bold rounded-xl text-sm text-slate-500 dark:text-slate-300"
+                                      >
+                                          戻る
+                                      </button>
+                                      <button
+                                          onClick={applyCustomData}
+                                          className="flex-1 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl active:scale-[0.98] transition-all text-sm shadow-[0_3px_0_#1e40af]"
+                                      >
+                                          適用して学習を開始
+                                      </button>
+                                  </div>
+                              </div>
+                          </div>
+                      )}
+
+                      {/* 出典表示 */}
+                      <div className="mt-8 text-center px-4">
+                          <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 tracking-wide leading-relaxed">
+                              出典：新学社「漢字練習字典」 (編集から自由に問題を変更可能です)
+                          </p>
+                      </div>
+
                   </div>
 
-                  {/* 各種モーダル（省略化を避けるため構造維持） */}
-                  {modals.menu && (
-                      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => e.target === e.currentTarget && setModals({...modals, menu: false})}>
-                          <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
-                              <div className="flex justify-between items-center p-5 border-b border-slate-100 dark:border-slate-700">
-                                  <span className="font-bold">オプション設定</span>
-                                  <button onClick={() => setModals({...modals, menu: false})}><IconX size={20} /></button>
+                  {/* 右側キャンバスパネル */}
+                  {settings.showCanvas && settings.canvasPosition === 'right' && !isFinished && (
+                      <div className="w-72 shrink-0 sticky top-4" style={{ zoom: settings.displayScale }}>
+                          <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl shadow-lg border border-slate-200/60 dark:border-slate-800/80">
+                              <div className="flex items-center justify-between mb-3">
+                                  <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400">手書きキャンバス</h3>
+                                  <button
+                                      onClick={() => updateSetting('canvasPosition', 'overlay')}
+                                      className="p-1 text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 rounded-lg transition-colors"
+                                      title="右パネルを閉じる"
+                                  >
+                                      <IconX size={14} />
+                                  </button>
                               </div>
-                              <div className="p-5 overflow-y-auto space-y-4">
-                                  <button onClick={() => { setModals({menu: false, edit: true}); setTempRawText(rawText); }} className="w-full py-3 bg-blue-50 text-blue-700 font-bold rounded-xl border border-blue-200">問題のデータ編集（Excel貼り付け）</button>
-                                  <button onClick={() => { setModals({menu: false, list: true}); setListFilter('all'); }} className="w-full py-3 bg-slate-50 text-slate-700 font-bold rounded-xl border border-slate-200">問題リスト一覧を表示</button>
-                                  <button onClick={resetAllData} className="w-full py-3 text-rose-500 font-bold rounded-xl bg-rose-50">学習進捗をすべてリセット</button>
+                              <div className="relative rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/30" style={{aspectRatio: '3/4'}}>
+                                  <canvas
+                                      ref={canvasRightRef}
+                                      onPointerDown={startDrawing}
+                                      onPointerMove={draw}
+                                      onPointerUp={stopDrawing}
+                                      onPointerLeave={stopDrawing}
+                                      onMouseDown={startDrawing}
+                                      onMouseMove={draw}
+                                      onMouseUp={stopDrawing}
+                                      onMouseLeave={stopDrawing}
+                                      onTouchStart={startDrawing}
+                                      onTouchMove={draw}
+                                      onTouchEnd={stopDrawing}
+                                      className="w-full h-full cursor-crosshair"
+                                      style={{ touchAction: 'none' }}
+                                  />
                               </div>
+                              <button
+                                  onClick={clearCanvas}
+                                  className="mt-3 w-full py-2 flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 rounded-xl text-xs font-bold transition-all"
+                              >
+                                  <IconTrash size={14} /> 消去
+                              </button>
                           </div>
                       </div>
                   )}
 
-                  {modals.list && (
-                      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => e.target === e.currentTarget && setModals({...modals, list: false})}>
-                          <div className="bg-white dark:bg-slate-800 w-full max-w-2xl h-[85vh] flex flex-col rounded-3xl shadow-xl overflow-hidden">
-                              <div className="flex justify-between items-center p-5 border-b"><h3 className="font-bold">問題リスト</h3><button onClick={() => setModals({...modals, list: false, menu: true})}><IconX size={24} /></button></div>
-                              <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                                  {items.map(item => (<div key={item.id} className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl flex justify-between"><span>{item.q}</span><span className="font-bold text-blue-600">{item.a}</span></div>))}
-                              </div>
-                          </div>
-                      </div>
-                  )}
-
-                  {modals.edit && (
-                      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => e.target === e.currentTarget && setModals({...modals, edit: false})}>
-                          <div className="bg-white dark:bg-slate-800 w-full max-w-xl h-[85vh] flex flex-col rounded-3xl shadow-xl overflow-hidden">
-                              <div className="flex justify-between items-center p-5 border-b"><h3 className="font-bold">問題データの編集</h3><button onClick={() => setModals({...modals, edit: false, menu: true})}><IconX size={24} /></button></div>
-                              <div className="flex-1 p-4 flex flex-col gap-2">
-                                  <textarea value={tempRawText} onChange={(e) => setTempRawText(e.target.value)} className="flex-1 w-full p-4 rounded-xl border bg-slate-50 font-mono text-sm resize-none" placeholder={"問題 [タブ] 答え\nの形式で入力してください"} />
-                              </div>
-                              <div className="p-4 border-t bg-slate-50 flex gap-2">
-                                  <button onClick={resetToDefaultData} className="px-4 py-2 bg-slate-200 font-bold rounded-xl text-sm">デフォルトに戻す</button>
-                                  <button onClick={applyCustomData} className="flex-1 py-2 bg-blue-600 text-white font-bold rounded-xl text-sm">適用して学習を開始</button>
-                              </div>
-                          </div>
-                      </div>
-                  )}
-
-                  <div className={`fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-full font-bold shadow-lg transition-all duration-300 z-50 ${toast.visible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>{toast.message}</div>
               </div>
+
+              {/* トースト通知 */}
+              <div className={`fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-800 dark:bg-slate-700 text-white px-6 py-3 rounded-full font-bold shadow-lg transition-all duration-300 z-50 ${toast.visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
+                  {toast.message}
+              </div>
+
+          </div>
           );
+
       }
 
       const root = ReactDOM.createRoot(document.getElementById('root'));
