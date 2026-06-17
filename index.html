@@ -3,10 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- ★このタイトルを変えると、保存先が自動的に変わります -->
   <title>漢字テスト練習 3年③</title>
 
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
       tailwind.config = {
@@ -14,10 +12,8 @@
       }
   </script>
 
-  <!-- React & ReactDOM -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <!-- Babel -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <style>
@@ -389,7 +385,7 @@
                       q = parts[0].trim();
                       a = parts[1].trim();
                   } else {
-                      const match = line.match(/^(.+?)[\s　]+(.+)$/);
+                      const match = line.match(/^(.+?)[\s ]+(.+)$/);
                       if (match) {
                           q = match[1].trim();
                           a = match[2].trim();
@@ -1125,7 +1121,7 @@
               const handleKeyDown = (e) => {
                   if (modals.menu || modals.list || modals.edit || isFinished) return;
                   if (e.code === 'KeyS') { e.preventDefault(); if(currentItemDetail) toggleStar(currentItemDetail.id); return; }
-                
+                  
                   if (!isRevealed) {
                       if (settings.enableInput) {
                           if (e.code === 'Enter') {
@@ -1197,7 +1193,7 @@
 
           return (
               <div className={`min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex ${settings.showCanvas && settings.canvasPosition === 'right' && !isFinished ? 'items-start' : 'items-center'} justify-center p-4 transition-colors duration-200`}>
-                
+                  
                   <div className={`flex ${settings.showCanvas && settings.canvasPosition === 'right' && !isFinished ? 'flex-row gap-4 items-start' : 'flex-col items-center'} w-full ${settings.showCanvas && settings.canvasPosition === 'right' && !isFinished ? 'max-w-[900px]' : 'max-w-lg'}`}>
 
                       <div className={`flex flex-col items-center ${settings.showCanvas && settings.canvasPosition === 'right' && !isFinished ? 'max-w-lg flex-1' : 'w-full'}`}>
@@ -1464,7 +1460,7 @@
                                           </button>
                                       )}
                                   </div>
-                                 
+                                  
                                   {/* タブコンテンツ */}
                                   <div className="p-5 overflow-y-auto flex-1 space-y-6">
                                       
@@ -1717,13 +1713,13 @@
                                                                   <IconBookOpen size={18} className="text-blue-600 dark:text-blue-400 group-hover:scale-105 transition-transform" />
                                                                   <div>
                                                                       <div className="text-sm font-bold text-slate-700 dark:text-slate-200">{preset.name}</div>
-                                                      <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
-                                                          {preset.settings.darkMode ? 'ダーク' : 'ライト'} · 
-                                                          {preset.settings.autoSpeak ? '自動読上' : '手動読上'} · 
-                                                          {preset.settings.reverseMode ? '反転' : '通常'} · 
-                                                          {preset.settings.enableDictation ? '聞取ON' : '聞取OFF'} · 
-                                                          {preset.settings.enableInput ? '入力ON' : '入力OFF'}
-                                                      </div>
+                                                                      <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
+                                                                          {preset.settings.darkMode ? 'ダーク' : 'ライト'} · 
+                                                                          {preset.settings.autoSpeak ? '自動読上' : '手動読上'} · 
+                                                                          {preset.settings.reverseMode ? '反転' : '通常'} · 
+                                                                          {preset.settings.enableDictation ? '聞取ON' : '聞取OFF'} · 
+                                                                          {preset.settings.enableInput ? '入力ON' : '入力OFF'}
+                                                                      </div>
                                                                   </div>
                                                               </div>
                                                               {!preset.id.startsWith('preset_') || preset.id === 'preset_default' || preset.id === 'preset_focus' || preset.id === 'preset_night' || preset.id === 'preset_reverse' || preset.id === 'preset_kanji_normal' || preset.id === 'preset_kanji_write' || preset.id === 'preset_english_normal' || preset.id === 'preset_english_write' || preset.id === 'preset_english_type' || preset.id === 'preset_english_listen' ? null : (
